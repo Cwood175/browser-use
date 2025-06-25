@@ -472,7 +472,7 @@ class Registry(Generic[Context]):
 		return type(params).model_validate(processed_params)
 
 	# @time_execution_sync('--create_action_model')
-	def create_action_model(self, include_actions: list[str] | None = None, page=None) -> type[ActionModel]:
+	def create_action_model(self, include_actions: list[str] | None = None, page: Any = None) -> type[ActionModel]:
 		"""Creates a Union of individual action models from registered actions,
 		used by LLM APIs that support tool calling & enforce a schema.
 
@@ -513,10 +513,7 @@ class Registry(Generic[Context]):
 				f'{name.title().replace("_", "")}ActionModel',
 				__base__=ActionModel,
 				**{
-					name: (
-						action.param_model,
-						Field(description=action.description),
-					)
+					name: (action.param_model, Field(description=action.description)),
 				},
 			)
 			individual_action_models.append(individual_model)
