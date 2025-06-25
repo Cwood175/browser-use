@@ -509,14 +509,12 @@ class Registry(Generic[Context]):
 
 		for name, action in available_actions.items():
 			# Create an individual model for each action that contains only one field
+			# Use a dictionary with the field name and a tuple of (type, FieldInfo) for Pydantic v2
 			individual_model = create_model(
 				f'{name.title().replace("_", "")}ActionModel',
 				__base__=ActionModel,
 				**{
-					name: (
-						action.param_model,
-						Field(description=action.description),
-					)
+					name: (action.param_model, Field(description=action.description)),
 				},
 			)
 			individual_action_models.append(individual_model)
@@ -538,19 +536,25 @@ class Registry(Generic[Context]):
 
 				def get_index(self) -> int | None:
 					"""Delegate get_index to the underlying action model"""
-					if hasattr(self.root, 'get_index'):
-						return self.root.get_index()
+					# Cast to Any to bypass type checker strictness on UnionType attribute access
+					root = self.root  # type: ignore
+					if hasattr(root, 'get_index'):
+						return root.get_index()  # type: ignore
 					return None
 
 				def set_index(self, index: int):
 					"""Delegate set_index to the underlying action model"""
-					if hasattr(self.root, 'set_index'):
-						self.root.set_index(index)
+					# Cast to Any to bypass type checker strictness on UnionType attribute access
+					root = self.root  # type: ignore
+					if hasattr(root, 'set_index'):
+						root.set_index(index)  # type: ignore
 
 				def model_dump(self, **kwargs):
 					"""Delegate model_dump to the underlying action model"""
-					if hasattr(self.root, 'model_dump'):
-						return self.root.model_dump(**kwargs)
+					# Cast to Any to bypass type checker strictness on UnionType attribute access
+					root = self.root  # type: ignore
+					if hasattr(root, 'model_dump'):
+						return root.model_dump(**kwargs)  # type: ignore
 					return super().model_dump(**kwargs)
 
 			# Set the name for better debugging
