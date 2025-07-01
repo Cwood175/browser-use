@@ -125,7 +125,12 @@ class ChatAnthropic(BaseChatModel):
 	async def ainvoke(
 		self, messages: list[BaseMessage], output_format: type[T] | None = None
 	) -> ChatInvokeCompletion[T] | ChatInvokeCompletion[str]:
+		from typing import cast
+
+		from anthropic.types import TextBlockParam
+
 		anthropic_messages, system_prompt = AnthropicMessageSerializer.serialize_messages(messages)
+		anthropic_system = cast(str | list[TextBlockParam], system_prompt) if system_prompt else NOT_GIVEN
 
 		try:
 			if output_format is None:
@@ -133,7 +138,7 @@ class ChatAnthropic(BaseChatModel):
 				response = await self.get_client().messages.create(
 					model=self.model,
 					messages=anthropic_messages,
-					system=system_prompt or NOT_GIVEN,
+					system=anthropic_system,
 					**self._get_client_params_for_invoke(),
 				)
 
@@ -176,7 +181,7 @@ class ChatAnthropic(BaseChatModel):
 					model=self.model,
 					messages=anthropic_messages,
 					tools=[tool],
-					system=system_prompt or NOT_GIVEN,
+					system=anthropic_system,
 					tool_choice=tool_choice,
 					**self._get_client_params_for_invoke(),
 				)

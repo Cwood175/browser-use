@@ -1,16 +1,16 @@
 import json
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, TypeVar, overload
+from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
 
 from anthropic import (
 	NOT_GIVEN,
 	APIConnectionError,
 	APIStatusError,
-	AsyncAnthropicBedrock,
 	RateLimitError,
 )
-from anthropic.types import CacheControlEphemeralParam, Message, ToolParam
+from anthropic._client import AsyncAnthropicBedrock
+from anthropic.types import CacheControlEphemeralParam, Message, TextBlockParam, ToolParam
 from anthropic.types.text_block import TextBlock
 from anthropic.types.tool_choice_tool_param import ToolChoiceToolParam
 from pydantic import BaseModel
@@ -153,6 +153,13 @@ class ChatAnthropicBedrock(ChatAWSBedrock):
 		self, messages: list[BaseMessage], output_format: type[T] | None = None
 	) -> ChatInvokeCompletion[T] | ChatInvokeCompletion[str]:
 		anthropic_messages, system_prompt = AnthropicMessageSerializer.serialize_messages(messages)
+		system_prompt_param = (
+			NOT_GIVEN
+			if not system_prompt
+			else system_prompt
+			if isinstance(system_prompt, str)
+			else cast(Iterable[TextBlockParam], system_prompt)
+		)
 
 		try:
 			if output_format is None:
@@ -160,7 +167,7 @@ class ChatAnthropicBedrock(ChatAWSBedrock):
 				response = await self.get_client().messages.create(
 					model=self.model,
 					messages=anthropic_messages,
-					system=system_prompt or NOT_GIVEN,
+					system=system_prompt_param,
 					**self._get_client_params_for_invoke(),
 				)
 
@@ -203,7 +210,7 @@ class ChatAnthropicBedrock(ChatAWSBedrock):
 					model=self.model,
 					messages=anthropic_messages,
 					tools=[tool],
-					system=system_prompt or NOT_GIVEN,
+					system=system_prompt_param,
 					tool_choice=tool_choice,
 					**self._get_client_params_for_invoke(),
 				)
