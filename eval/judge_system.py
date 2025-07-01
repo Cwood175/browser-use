@@ -194,7 +194,11 @@ def are_images_identical(img_path1: str, img_path2: str) -> bool:
 				return False
 
 			# Compare pixel data
-			return list(img1.getdata()) == list(img2.getdata())
+			# In recent Pillow versions, getdata() returns an ImagingCore object.
+			# Convert to list of tuples for comparison to ensure iterability and compatibility.
+			data1 = list(img1.getdata())
+			data2 = list(img2.getdata())
+			return data1 == data2
 	except Exception as e:
 		logger.warning(f'Failed to compare images {img_path1} and {img_path2}: {e}')
 		return False

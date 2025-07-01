@@ -139,7 +139,7 @@ class ChatOpenAI(BaseChatModel):
 					model=self.model,
 					messages=openai_messages,
 					temperature=self.temperature,
-					reasoning_effort=self.reasoning_effort,
+					reasoning_effort=self.reasoning_effort if self.reasoning_effort else None,
 				)
 
 				usage = self._get_usage(response)
@@ -160,7 +160,7 @@ class ChatOpenAI(BaseChatModel):
 					model=self.model,
 					messages=openai_messages,
 					temperature=self.temperature,
-					reasoning_effort=self.reasoning_effort,
+					reasoning_effort=self.reasoning_effort if self.reasoning_effort else None,
 					response_format=ResponseFormatJSONSchema(json_schema=response_format, type='json_schema'),
 				)
 
