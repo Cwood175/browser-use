@@ -268,7 +268,7 @@ async def comprehensive_judge(
 		if Path(img_path).exists():
 			encoded_img = encode_image(img_path)
 			if encoded_img:
-				encoded_images.append(ContentPartImageParam(image_url=ImageURL(url=f'data:image/jpeg;base64,{encoded_img}')))
+				encoded_images.append(ContentPartImageParam(image_url=ImageURL(url=f'data:image/jpeg;base64,{encoded_img}', mime_type='image/jpeg')))
 
 	# Build error categories dynamically from enum
 	error_categories_text = ', '.join([category.value for category in ErrorCategory])

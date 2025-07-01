@@ -10,9 +10,7 @@ from anthropic import (
 	AsyncAnthropicBedrock,
 	RateLimitError,
 )
-from anthropic.types import CacheControlEphemeralParam, Message, ToolParam
-from anthropic.types.text_block import TextBlock
-from anthropic.types.tool_choice_tool_param import ToolChoiceToolParam
+from anthropic.types import CacheControlEphemeralParam, Message, ToolParam, TextBlock, ToolChoiceToolParam
 from pydantic import BaseModel
 
 from browser_use.llm.anthropic.serializer import AnthropicMessageSerializer
@@ -143,6 +141,7 @@ class ChatAnthropicBedrock(ChatAWSBedrock):
 		)
 		return usage
 
+	@overload
 	@overload
 	async def ainvoke(self, messages: list[BaseMessage], output_format: None = None) -> ChatInvokeCompletion[str]: ...
 
