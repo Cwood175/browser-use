@@ -178,7 +178,7 @@ class ChatAnthropic(BaseChatModel):
 					tools=[tool],
 					system=system_prompt or NOT_GIVEN,
 					tool_choice=tool_choice,
-					**self._get_client_params_for_invoke(),
+					max_tokens=self.max_tokens,
 				)
 
 				usage = self._get_usage(response)
