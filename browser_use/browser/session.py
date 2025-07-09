@@ -769,7 +769,7 @@ class BrowserSession(BaseModel):
 			# Just re-raise the error and let the retry decorator handle it
 			if 'timeout' in str(err).lower():
 				self.logger.warning(f'⏱️ Screenshot timed out on page {page.url}: {err}')
-			raise err
+			raise
 		finally:
 			try:
 				assert cdp_session
@@ -2140,17 +2140,18 @@ class BrowserSession(BaseModel):
 				title = await self._get_page_title(page)
 				tab_info = TabInfo(page_id=page_id, url=page.url, title=title)
 			except Exception:
-
 				# page.title() can hang forever on tabs that are crashed/disappeared/about:blank
 				# but we should preserve the real URL and not mislead the LLM about tab availability
-				self.logger.debug(f'⚠️ Failed to get tab info for tab #{page_id}: {_log_pretty_url(page.url)} (using fallback title)')
-				
+				self.logger.debug(
+					f'⚠️ Failed to get tab info for tab #{page_id}: {_log_pretty_url(page.url)} (using fallback title)'
+				)
+
 				# Only mark as unusable if it's actually about:blank, otherwise preserve the real URL
 				if page.url == 'about:blank':
 					tab_info = TabInfo(page_id=page_id, url='about:blank', title='ignore this tab and do not use it')
 				else:
 					# Preserve the real URL and use a descriptive fallback title
-					fallback_title = f'(title unavailable)'
+					fallback_title = '(title unavailable)'
 					tab_info = TabInfo(page_id=page_id, url=page.url, title=fallback_title)
 
 			tabs_info.append(tab_info)
@@ -2753,7 +2754,7 @@ class BrowserSession(BaseModel):
 
 		try:
 			await asyncio.wait_for(page.goto(normalized_url), timeout=0.1)
-		except Exception as e:
+		except Exception:
 			# NOTE we dont have to wait since we will wait later when we get the new page state
 			pass
 
@@ -3516,7 +3517,10 @@ class BrowserSession(BaseModel):
 	@require_initialization
 	@time_execution_async('--get_locate_element_by_text')
 	async def get_locate_element_by_text(
-		self, text: str, nth: int | None = 0, element_type: str | None = None
+		self,
+		text: str,
+		nth: int | None = 0,
+		element_type: str | None = None,
 	) -> ElementHandle | None:
 		"""
 		Locates an element on the page using the provided text.
@@ -3879,7 +3883,7 @@ class BrowserSession(BaseModel):
 				// Current viewport dimensions
 				viewport_width: window.innerWidth,
 				viewport_height: window.innerHeight,
-				
+
 				// Total page dimensions
 				page_width: Math.max(
 					document.documentElement.scrollWidth,
@@ -3889,7 +3893,7 @@ class BrowserSession(BaseModel):
 					document.documentElement.scrollHeight,
 					document.body.scrollHeight || 0
 				),
-				
+
 				// Current scroll position
 				scroll_x: window.scrollX || window.pageXOffset || document.documentElement.scrollLeft || 0,
 				scroll_y: window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0
@@ -4154,7 +4158,8 @@ class BrowserSession(BaseModel):
 		Returns True if PDF is detected, False otherwise.
 		"""
 		try:
-			is_pdf_viewer = await page.evaluate("""
+			is_pdf_viewer = await page.evaluate(
+				"""
 				() => {
 					// Check for Chrome's built-in PDF viewer (updated selector)
 					const pdfEmbed = document.querySelector('embed[type="application/x-google-chrome-pdf"]') ||
@@ -4168,7 +4173,8 @@ class BrowserSession(BaseModel):
 					
 					return isPdfViewer || isPdfUrl;
 				}
-			""")
+				"""
+			)
 			return is_pdf_viewer
 		except Exception as e:
 			self.logger.debug(f'Error checking PDF viewer: {type(e).__name__}: {e}')
@@ -4220,7 +4226,8 @@ class BrowserSession(BaseModel):
 				# Properly escape the URL to prevent JavaScript injection
 				escaped_pdf_url = json.dumps(pdf_url)
 
-				download_result = await page.evaluate(f"""
+				download_result = await page.evaluate(
+					f"""
 					async () => {{
 						try {{
 							// Use fetch with cache: 'force-cache' to prioritize cached version
@@ -4251,7 +4258,8 @@ class BrowserSession(BaseModel):
 							throw new Error(`Fetch failed: ${{error.message}}`);
 						}}
 					}}
-				""")
+					"""
+				)
 
 				if download_result and download_result.get('data') and len(download_result['data']) > 0:
 					# Ensure unique filename

@@ -5,7 +5,6 @@ from typing import Any, TypeVar, overload
 
 import httpx
 from anthropic import (
-	NOT_GIVEN,
 	APIConnectionError,
 	APIStatusError,
 	AsyncAnthropic,
@@ -130,11 +129,14 @@ class ChatAnthropic(BaseChatModel):
 		try:
 			if output_format is None:
 				# Normal completion without structured output
+				client_params = self._get_client_params_for_invoke()
+				if system_prompt is not None:
+					client_params['system'] = system_prompt
+
 				response = await self.get_client().messages.create(
 					model=self.model,
 					messages=anthropic_messages,
-					system=system_prompt or NOT_GIVEN,
-					**self._get_client_params_for_invoke(),
+					**client_params,
 				)
 
 				usage = self._get_usage(response)
@@ -171,14 +173,16 @@ class ChatAnthropic(BaseChatModel):
 
 				# Force the model to use this tool
 				tool_choice = ToolChoiceToolParam(type='tool', name=tool_name)
+				client_params = self._get_client_params_for_invoke()
+				if system_prompt is not None:
+					client_params['system'] = system_prompt
 
 				response = await self.get_client().messages.create(
 					model=self.model,
 					messages=anthropic_messages,
 					tools=[tool],
-					system=system_prompt or NOT_GIVEN,
 					tool_choice=tool_choice,
-					**self._get_client_params_for_invoke(),
+					**client_params,
 				)
 
 				usage = self._get_usage(response)

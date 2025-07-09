@@ -28,14 +28,14 @@ class MockMCPServer:
 	def _setup_handlers(self):
 		"""Setup MCP server handlers."""
 
-		@self.server.list_tools()
-		async def handle_list_tools() -> list[types.Tool]:
+		@self.server.request_handler(types.ListToolsRequest)
+		async def handle_list_tools(_request: types.ListToolsRequest) -> types.ServerResult:
 			"""List available test tools."""
-			return [
+			tools = [
 				types.Tool(
 					name='count_to_n',
 					description='Count from 1 to n and return the numbers',
-					inputSchema={
+					input_schema={
 						'type': 'object',
 						'properties': {'n': {'type': 'integer', 'description': 'Number to count to'}},
 						'required': ['n'],
@@ -44,7 +44,7 @@ class MockMCPServer:
 				types.Tool(
 					name='echo_message',
 					description='Echo back a message with a prefix',
-					inputSchema={
+					input_schema={
 						'type': 'object',
 						'properties': {
 							'message': {'type': 'string', 'description': 'Message to echo'},
@@ -56,13 +56,17 @@ class MockMCPServer:
 				types.Tool(
 					name='get_test_data',
 					description='Get some test data as JSON',
-					inputSchema={'type': 'object', 'properties': {}},
+					input_schema={'type': 'object', 'properties': {}},
 				),
 			]
+			return types.ServerResult(types.ListToolsResult(tools=tools))
 
-		@self.server.call_tool()
-		async def handle_call_tool(name: str, arguments: dict | None) -> list[types.TextContent]:
+		@self.server.request_handler(types.CallToolRequest)
+		async def handle_call_tool(request: types.CallToolRequest) -> types.ServerResult:
 			"""Handle tool execution."""
+			name = request.params.name
+			arguments = request.params.arguments
+
 			# Record the call
 			self.call_history.append({'tool': name, 'arguments': arguments or {}})
 
@@ -85,7 +89,8 @@ class MockMCPServer:
 			else:
 				result = f'Unknown tool: {name}'
 
-			return [types.TextContent(type='text', text=result)]
+			content = [types.TextContent(type='text', text=result)]
+			return types.ServerResult(types.CallToolResult(content=content))
 
 	async def run(self):
 		"""Run the MCP server."""

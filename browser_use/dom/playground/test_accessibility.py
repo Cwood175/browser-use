@@ -74,12 +74,15 @@ async def get_ax_tree(TARGET_URL):
 		print(f'Navigating to {TARGET_URL}')
 		await page.goto(TARGET_URL, wait_until='domcontentloaded')
 
-		ax_tree_interesting = await page.accessibility.snapshot(interesting_only=True)
+		client = await page.context.new_cdp_session(page)
+		ax_tree_response = await client.send('Accessibility.getFullAXTree')
+		ax_tree_interesting = ax_tree_response.get('nodes', [])
 		lines = []
 		flatten_ax_tree(ax_tree_interesting, lines)
 		print(lines)
 		print(f'length of ax_tree_interesting: {len(lines)}')
 
+		await client.detach()
 		await browser.close()
 
 
