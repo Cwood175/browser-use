@@ -267,7 +267,7 @@ async def comprehensive_judge(
 	selected_images = filter_images(screenshot_paths, max_images)
 
 	# Encode images
-	encoded_images: list[ContentPartImageParam] = []
+	encoded_images: list[ContentPart] = []
 	for img_path in selected_images:
 		if Path(img_path).exists():
 			encoded_img = encode_image(img_path)
@@ -596,13 +596,13 @@ async def judge_with_repeat_and_average(
 	avg_score = sum(eval.final_score for eval in evaluations) / len(evaluations)
 
 	# Merge error categories (keep unique)
-	all_error_categories = []
+	all_error_categories: list[str] = []
 	for eval in evaluations:
 		all_error_categories.extend(eval.error_categories)
 	unique_error_categories = list(set(all_error_categories))  # Remove duplicates
 
 	# Merge improvement tips (keep unique)
-	all_improvement_tips = []
+	all_improvement_tips: list[str] = []
 	for eval in evaluations:
 		all_improvement_tips.extend(eval.improvement_tips)
 	unique_improvement_tips = list(set(all_improvement_tips))  # Remove duplicates
