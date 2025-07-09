@@ -125,6 +125,16 @@ class ChatAnthropic(BaseChatModel):
 	async def ainvoke(
 		self, messages: list[BaseMessage], output_format: type[T] | None = None
 	) -> ChatInvokeCompletion[T] | ChatInvokeCompletion[str]:
+		# Implementation remains the same, but we need to handle the type narrowing correctly
+		# The return type annotation is technically correct for the union, but pyright often struggles
+		# with the implementation matching the union of overloads if not careful. However, the main issue
+		# reported is often the 'NotGiven' type mismatch in the calls below. Let's fix the calls first.
+		# If the overload mismatch is strictly about the return type annotation being too broad or narrow,
+		# usually ensuring the implementation signature matches the most general overload is key.
+		# Here, the implementation signature matches the union of inputs (None or type[T]).
+		# The return type is the union of outputs. This is standard.
+		# The real issue might be the 'NotGiven' usage.
+		pass
 		anthropic_messages, system_prompt = AnthropicMessageSerializer.serialize_messages(messages)
 
 		try:
@@ -133,7 +143,7 @@ class ChatAnthropic(BaseChatModel):
 				response = await self.get_client().messages.create(
 					model=self.model,
 					messages=anthropic_messages,
-					system=system_prompt or NOT_GIVEN,
+					system=system_prompt if system_prompt else NOT_GIVEN,
 					**self._get_client_params_for_invoke(),
 				)
 
@@ -176,7 +186,7 @@ class ChatAnthropic(BaseChatModel):
 					model=self.model,
 					messages=anthropic_messages,
 					tools=[tool],
-					system=system_prompt or NOT_GIVEN,
+					system=system_prompt if system_prompt else NOT_GIVEN,
 					tool_choice=tool_choice,
 					**self._get_client_params_for_invoke(),
 				)

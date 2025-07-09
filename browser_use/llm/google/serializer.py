@@ -1,4 +1,5 @@
 import base64
+from typing import Optional
 
 from google.genai.types import Content, ContentListUnion, Part
 

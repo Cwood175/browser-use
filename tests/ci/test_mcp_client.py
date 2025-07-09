@@ -9,7 +9,7 @@ from pathlib import Path
 import mcp.server.stdio
 import mcp.types as types
 import pytest
-from mcp.server import NotificationOptions, Server
+from mcp.server import Server
 from mcp.server.models import InitializationOptions
 from pytest_httpserver import HTTPServer
 
@@ -28,64 +28,22 @@ class MockMCPServer:
 	def _setup_handlers(self):
 		"""Setup MCP server handlers."""
 
-		@self.server.list_tools()
-		async def handle_list_tools() -> list[types.Tool]:
-			"""List available test tools."""
-			return [
-				types.Tool(
-					name='count_to_n',
-					description='Count from 1 to n and return the numbers',
-					inputSchema={
-						'type': 'object',
-						'properties': {'n': {'type': 'integer', 'description': 'Number to count to'}},
-						'required': ['n'],
-					},
-				),
-				types.Tool(
-					name='echo_message',
-					description='Echo back a message with a prefix',
-					inputSchema={
-						'type': 'object',
-						'properties': {
-							'message': {'type': 'string', 'description': 'Message to echo'},
-							'prefix': {'type': 'string', 'description': 'Prefix to add', 'default': 'Echo:'},
-						},
-						'required': ['message'],
-					},
-				),
-				types.Tool(
-					name='get_test_data',
-					description='Get some test data as JSON',
-					inputSchema={'type': 'object', 'properties': {}},
-				),
-			]
+		@self.server.tool()
+		async def count_to_n(n: int) -> str:
+			"""Count from 1 to n and return the numbers."""
+			numbers = ', '.join(str(i) for i in range(1, n + 1))
+			return f'Counted to {n}: {numbers}'
 
-		@self.server.call_tool()
-		async def handle_call_tool(name: str, arguments: dict | None) -> list[types.TextContent]:
-			"""Handle tool execution."""
-			# Record the call
-			self.call_history.append({'tool': name, 'arguments': arguments or {}})
+		@self.server.tool()
+		async def echo_message(message: str, prefix: str = 'Echo:') -> str:
+			"""Echo back a message with a prefix."""
+			return f'{prefix} {message}'
 
-			if name == 'count_to_n':
-				assert arguments is not None
-				n = arguments.get('n', 5)
-				numbers = ', '.join(str(i) for i in range(1, n + 1))
-				result = f'Counted to {n}: {numbers}'
-
-			elif name == 'echo_message':
-				assert arguments is not None
-				message = arguments.get('message', '')
-				prefix = arguments.get('prefix', 'Echo:')
-				result = f'{prefix} {message}'
-
-			elif name == 'get_test_data':
-				data = {'status': 'success', 'items': ['apple', 'banana', 'cherry'], 'count': 3}
-				result = json.dumps(data, indent=2)
-
-			else:
-				result = f'Unknown tool: {name}'
-
-			return [types.TextContent(type='text', text=result)]
+		@self.server.tool()
+		async def get_test_data() -> str:
+			"""Get some test data as JSON."""
+			data = {'status': 'success', 'items': ['apple', 'banana', 'cherry'], 'count': 3}
+			return json.dumps(data, indent=2)
 
 	async def run(self):
 		"""Run the MCP server."""
@@ -96,10 +54,6 @@ class MockMCPServer:
 				InitializationOptions(
 					server_name='test-mcp-server',
 					server_version='0.1.0',
-					capabilities=self.server.get_capabilities(
-						notification_options=NotificationOptions(),
-						experimental_capabilities={},
-					),
 				),
 			)
 
