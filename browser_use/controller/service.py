@@ -80,11 +80,14 @@ class Controller(Generic[Context]):
 			msg = f'🔍  Searched for "{params.query}" in Google'
 			logger.info(msg)
 			return ActionResult(
-				extracted_content=msg, include_in_memory=True, long_term_memory=f"Searched Google for '{params.query}'"
+				extracted_content=msg,
+				include_in_memory=True,
+				long_term_memory=f"Searched Google for '{params.query}'",
 			)
 
 		@self.registry.action(
-			'Navigate to URL, set new_tab=True to open in new tab, False to navigate in current tab', param_model=GoToUrlAction
+			'Navigate to URL, set new_tab=True to open in new tab, False to navigate in current tab',
+			param_model=GoToUrlAction,
 		)
 		async def go_to_url(params: GoToUrlAction, browser_session: BrowserSession):
 			try:
@@ -144,7 +147,9 @@ class Controller(Generic[Context]):
 				msg = f'🕒  Waiting for {actual_seconds} seconds'
 			logger.info(msg)
 			await asyncio.sleep(actual_seconds)
-			return ActionResult(extracted_content=msg, include_in_memory=True, long_term_memory=f'Waited for {actual_seconds} seconds')
+			return ActionResult(
+				extracted_content=msg, include_in_memory=True, long_term_memory=f'Waited for {actual_seconds} seconds'
+			)
 
 		# Element Interaction Actions
 
@@ -1036,7 +1041,10 @@ Explain the content of the page and that the requested information is not availa
 				long_term_memory=f'Updated cells {cell_or_range} with {new_contents_tsv}',
 			)
 
-		@self.registry.action('Google Sheets: Clear whatever cells are currently selected', domains=['https://docs.google.com'])
+		@self.registry.action(
+			'Google Sheets: Clear whatever cells are currently selected',
+			domains=['https://docs.google.com'],
+		)
 		async def clear_cell_contents(cell_or_range: str, browser_session: BrowserSession):
 			page = await browser_session.get_current_page()
 
