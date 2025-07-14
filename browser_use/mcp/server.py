@@ -794,6 +794,7 @@ class BrowserUseServer:
 					),
 				),
 			)
+		# type: ignore[reportAttributeAccessIssue]
 
 
 async def main():
@@ -804,7 +805,7 @@ async def main():
 
 	server = BrowserUseServer()
 	# Capture telemetry for server start
-	server._telemetry.capture(
+	server._telemetry.capture(  # type: ignore[reportPrivateUsage]
 		MCPServerTelemetryEvent(
 			version=get_browser_use_version(),
 			action='start',
@@ -815,8 +816,8 @@ async def main():
 		await server.run()
 	finally:
 		# Capture telemetry for server stop
-		duration = time.time() - server._start_time
-		server._telemetry.capture(
+		duration = time.time() - server._start_time  # type: ignore[reportPrivateUsage]
+		server._telemetry.capture(  # type: ignore[reportPrivateUsage]
 			MCPServerTelemetryEvent(
 				version=get_browser_use_version(),
 				action='stop',
@@ -824,7 +825,7 @@ async def main():
 				parent_process_cmdline=get_parent_process_cmdline(),
 			)
 		)
-		server._telemetry.flush()
+		server._telemetry.flush()  # type: ignore[reportPrivateUsage]
 
 
 if __name__ == '__main__':
