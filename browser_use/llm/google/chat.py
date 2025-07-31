@@ -200,7 +200,7 @@ class ChatGoogle(BaseChatModel):
 			thinking_config_dict: types.ThinkingConfigDict = {'thinking_budget': self.thinking_budget}
 			config['thinking_config'] = thinking_config_dict
 
-		async def _make_api_call():
+		async def _make_api_call(contents: list[dict]):
 			if output_format is None:
 				# Return string response
 				response = await self.get_client().aio.models.generate_content(
@@ -330,7 +330,7 @@ class ChatGoogle(BaseChatModel):
 			last_exception = None
 			for attempt in range(10):  # Match our 10 retry attempts from other providers
 				try:
-					return await _make_api_call()
+					return await _make_api_call(contents)
 				except Exception as e:
 					last_exception = e
 					if not _is_retryable_error(e) or attempt == 9:  # Last attempt
