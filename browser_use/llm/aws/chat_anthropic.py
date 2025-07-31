@@ -7,7 +7,7 @@ from anthropic import (
 	NOT_GIVEN,
 	APIConnectionError,
 	APIStatusError,
-	AsyncAnthropicBedrock,
+	AsyncAnthropic,
 	RateLimitError,
 )
 from anthropic.types import CacheControlEphemeralParam, Message, ToolParam
@@ -162,6 +162,7 @@ class ChatAnthropicBedrock(ChatAWSBedrock):
 				# Normal completion without structured output
 				response = await self.get_client().messages.create(
 					model=self.model,
+					max_tokens=self.max_tokens,
 					messages=anthropic_messages,
 					system=system_prompt or NOT_GIVEN,
 					**self._get_client_params_for_invoke(),
@@ -204,6 +205,7 @@ class ChatAnthropicBedrock(ChatAWSBedrock):
 
 				response = await self.get_client().messages.create(
 					model=self.model,
+					max_tokens=self.max_tokens,
 					messages=anthropic_messages,
 					tools=[tool],
 					system=system_prompt or NOT_GIVEN,
