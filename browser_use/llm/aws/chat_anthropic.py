@@ -7,9 +7,9 @@ from anthropic import (
 	NOT_GIVEN,
 	APIConnectionError,
 	APIStatusError,
-	AsyncAnthropicBedrock,
 	RateLimitError,
 )
+from anthropic.lib.bedrock import AsyncAnthropicBedrock
 from anthropic.types import CacheControlEphemeralParam, Message, ToolParam
 from anthropic.types.text_block import TextBlock
 from anthropic.types.tool_choice_tool_param import ToolChoiceToolParam
@@ -153,6 +153,7 @@ class ChatAnthropicBedrock(ChatAWSBedrock):
 		self, messages: list[BaseMessage], output_format: type[T] | None = None
 	) -> ChatInvokeCompletion[T] | ChatInvokeCompletion[str]:
 		anthropic_messages, system_prompt = AnthropicMessageSerializer.serialize_messages(messages)
+		system = system_prompt if isinstance(system_prompt, str) else NOT_GIVEN
 
 		try:
 			if output_format is None:
@@ -160,7 +161,7 @@ class ChatAnthropicBedrock(ChatAWSBedrock):
 				response = await self.get_client().messages.create(
 					model=self.model,
 					messages=anthropic_messages,
-					system=system_prompt or NOT_GIVEN,
+					system=system,
 					**self._get_client_params_for_invoke(),
 				)
 
@@ -203,7 +204,7 @@ class ChatAnthropicBedrock(ChatAWSBedrock):
 					model=self.model,
 					messages=anthropic_messages,
 					tools=[tool],
-					system=system_prompt or NOT_GIVEN,
+					system=system,
 					tool_choice=tool_choice,
 					**self._get_client_params_for_invoke(),
 				)
