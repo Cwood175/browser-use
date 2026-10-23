@@ -266,8 +266,8 @@ def are_images_identical(img_path1: str, img_path2: str) -> bool:
 			if img1.size != img2.size:
 				return False
 
-			# Compare pixel data
-			return list(img1.getdata()) == list(img2.getdata())
+			# Compare pixel data using hash-based comparison
+			return hashlib.md5(img1.tobytes()).hexdigest() == hashlib.md5(img2.tobytes()).hexdigest()
 	except Exception as e:
 		logger.warning(f'Failed to compare images {img_path1} and {img_path2}: {e}')
 		return False

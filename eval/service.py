@@ -1471,12 +1471,13 @@ async def run_task_with_semaphore(
 			else:
 				logger.debug(f'Task {task.task_id}: No Laminar run ID available, skipping datapoint creation')
 
-				# Initialize task result and basic setup
-			task_result = TaskResult(task.task_id, run_id, task.confirmed_task, task, max_steps_per_task, laminar_task_link)
+			# Initialize task result and basic setup
+		task_result = TaskResult(task.task_id, run_id, task.confirmed_task, task, max_steps_per_task, laminar_task_link)
 
-			task_folder = Path(f'saved_trajectories/{task.task_id}')
+		task_folder = Path(f'saved_trajectories/{task.task_id}')
 
-			logger.info(f'Task {task.task_id}: Starting execution pipeline.')
+		logger.info(f'Task {task.task_id}: Starting execution pipeline.')
+		try:
 			try:
 				agent_history = None  # Initialize to track agent execution
 

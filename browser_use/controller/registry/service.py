@@ -513,10 +513,7 @@ class Registry(Generic[Context]):
 				f'{name.title().replace("_", "")}ActionModel',
 				__base__=ActionModel,
 				**{
-					name: (
-						action.param_model,
-						Field(description=action.description),
-					)
+					name: (action.param_model, Field(description=action.description)),
 				},
 			)
 			individual_action_models.append(individual_model)
