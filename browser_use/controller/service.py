@@ -477,20 +477,10 @@ Explain the content of the page and that the requested information is not availa
 			'Get the accessibility tree of the page in the format "role name" with the number_of_elements to return',
 		)
 		async def get_ax_tree(number_of_elements: int, page: Page):
-			node = await page.accessibility.snapshot(interesting_only=True)
-
-			def flatten_ax_tree(node, lines):
-				if not node:
-					return
-				role = node.get('role', '')
-				name = node.get('name', '')
-				lines.append(f'{role} {name}')
-				for child in node.get('children', []):
-					flatten_ax_tree(child, lines)
-
-			lines = []
-			flatten_ax_tree(node, lines)
-			msg = '\n'.join(lines)
+			msg = await page.locator('body').aria_snapshot()
+			if number_of_elements > 0:
+				lines = msg.splitlines()
+				msg = '\n'.join(lines[:number_of_elements])
 			logger.info(msg)
 			return ActionResult(
 				extracted_content=msg,
