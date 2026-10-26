@@ -144,7 +144,11 @@ class Controller(Generic[Context]):
 				msg = f'🕒  Waiting for {actual_seconds} seconds'
 			logger.info(msg)
 			await asyncio.sleep(actual_seconds)
-			return ActionResult(extracted_content=msg, include_in_memory=True, long_term_memory=f'Waited for {actual_seconds} seconds')
+			return ActionResult(
+				extracted_content=msg,
+				include_in_memory=True,
+				long_term_memory=f'Waited for {actual_seconds} seconds',
+			)
 
 		# Element Interaction Actions
 
