@@ -11,7 +11,23 @@ from uuid import uuid4
 
 import psutil
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
+try:
+	from pydantic_settings import BaseSettings, SettingsConfigDict  # pyright: ignore[reportMissingImports]
+except ImportError:
+
+	class BaseSettings(BaseModel):  # pyright: ignore[reportRedeclaration]
+		def __init__(self, **data: Any) -> None:
+			env_data: dict[str, Any] = {}
+			for field_name in self.model_fields:
+				if field_name in os.environ:
+					env_data[field_name] = os.environ[field_name]
+			env_data.update(data)
+			super().__init__(**env_data)
+
+	def SettingsConfigDict(**kwargs: Any) -> dict[str, Any]:  # pyright: ignore[reportRedeclaration]
+		return dict(kwargs)
+
 
 logger = logging.getLogger(__name__)
 
